@@ -1,0 +1,103 @@
+import io
+from aiogram import Router, F, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import BufferedInputFile
+
+from core.crypto_utils import encrypt_data, decrypt_data, embed_data, extract_data
+from core.gemini_utils import generate_cover_image
+
+router = Router()
+
+# FSM states
+class EncodeState(StatesGroup):
+    waiting_for_text = State()
+    waiting_for_password = State()
+
+class DecodeState(StatesGroup):
+    waiting_for_file = State()
+    waiting_for_pass = State()
+
+@router.message(Command("start"))
+async def cmd_start(message: types.Message):
+    await message.answer(
+        "🕵️‍♂️ **GenStega**\n"
+        "I can hide text inside images.\n\n"
+        "🔒 /encode — Hide message\n"
+        "🔓 /decode — Read message"
+    )
+
+@router.message(Command("encode"))
+async def start_encode(message: types.Message, state: FSMContext):
+    await message.answer("✍️ Enter text to hide:")
+    await state.set_state(EncodeState.waiting_for_text)
+
+@router.message(EncodeState.waiting_for_text)
+async def process_text(message: types.Message, state: FSMContext):
+    await state.update_data(secret_text=message.text)
+    await message.answer("🔑 Enter encryption password:")
+    await state.set_state(EncodeState.waiting_for_password)
+
+@router.message(EncodeState.waiting_for_password)
+async def process_password(message: types.Message, state: FSMContext):
+    password = message.text
+    data = await state.get_data()
+    secret_text = data['secret_text']
+    
+    msg = await message.answer("⏳ Generating image and embedding data...")
+    
+    try:
+        encrypted_data = encrypt_data(secret_text, password, ttl_minutes=60)
+        image_bytes = await generate_cover_image()
+        stego_bytes = embed_data(image_bytes, encrypted_data)
+        
+        input_file = BufferedInputFile(stego_bytes, filename="secret_image.png")
+        await message.answer_document(
+            input_file, 
+            caption="✅ **Done!**\nSend this file to recipient.\nData is hidden inside. Only you know the password."
+        )
+        await msg.delete()
+    except Exception as e:
+        await message.answer(f"Error: {e}")
+    
+    await state.clear()
+
+@router.message(Command("decode"))
+async def start_decode(message: types.Message, state: FSMContext):
+    await message.answer("📂 Send me a **PNG file** (as document).")
+    await state.set_state(DecodeState.waiting_for_file)
+
+@router.message(DecodeState.waiting_for_file, F.photo)
+async def reject_photo(message: types.Message):
+    await message.answer("📛 **Error!** You sent a compressed photo.\nTelegram destroyed hidden data.\nSend image as **FILE (Document)**.")
+
+@router.message(DecodeState.waiting_for_file, F.document)
+async def process_file(message: types.Message, state: FSMContext):
+    if message.document.mime_type != "image/png":
+        await message.answer("📛 Not a PNG! I only work with PNG format.")
+        return
+
+    file_id = message.document.file_id
+    file = await message.bot.get_file(file_id)
+    file_io = io.BytesIO()
+    await message.bot.download_file(file.file_path, file_io)
+    
+    await state.update_data(file_bytes=file_io.getvalue())
+    await message.answer("🔑 File received. Enter password:")
+    await state.set_state(DecodeState.waiting_for_pass)
+
+@router.message(DecodeState.waiting_for_pass)
+async def process_decrypt(message: types.Message, state: FSMContext):
+    password = message.text
+    data = await state.get_data()
+    file_bytes = data['file_bytes']
+    
+    try:
+        extracted_bytes = extract_data(file_bytes)
+        result = decrypt_data(extracted_bytes, password)
+        await message.answer(result)
+    except Exception:
+        await message.answer("❌ Failed to decrypt. Invalid password or no hidden data in image.")
+    
+    await state.clear()
