@@ -68,28 +68,25 @@ The project is built on a modular system that ensures code cleanliness and ease 
 
 ---
 
-## 📄 License
+## ⚖️ License
 
-**Copyright © 2026. All Rights Reserved.**
+**© 2026 Yan Shytyk. All Rights Reserved.**
 
-This software and associated documentation files (the "Software") are the exclusive property of the copyright holder. 
+This project is the sole property of the author. The source code is provided for educational purposes and to demonstrate programming skills.
 
-**The following actions are strictly prohibited without prior written permission:**
-- Copying, modifying, or distributing the Software
-- Using the Software for commercial purposes
-- Using the Software for personal purposes
-- Reverse engineering, decompiling, or disassembling the Software
-- Creating derivative works based on the Software
+### ✅ Permitted:
+- Viewing the source code for educational purposes
+- Code analysis and studying approaches
+- Using to understand architecture and patterns
 
-**Disclaimer:**
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+### ❌ Prohibited:
+- Commercial use without author's permission
+- Copying and using in your own projects
+- Distribution or publication of modified versions
+- Using as a basis for other products
 
-For permissions or inquiries, please contact the copyright holder.
+For permission inquiries, contact the author.
 
 ---
 
-<div align="center">
-
-**Made with ❤️ by Yan Shytyk**
-
-</div>
+Made with ❤️ by [@shytyk-develop](https://github.com/shytyk-develop) | If you find it useful, give it a ⭐️!
